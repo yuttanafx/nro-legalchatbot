@@ -15,8 +15,10 @@ LINE OA → Webhook (/api/line/webhook) → Sensitive Filter Check
 ```
 
 **AI ที่ใช้:** เลือกได้ 3 ค่าย — Claude (Anthropic), Gemini (Google), หรือ GPT (OpenAI)
-สลับได้จากหน้า `/admin/settings` โดยไม่ต้องแก้โค้ดหรือ deploy ใหม่ (แค่ใส่ API key ของค่ายนั้น
-ไว้ใน Environment Variables ล่วงหน้า) ค่าเริ่มต้นคือ Claude เพราะ context window ใหญ่
+สลับได้จากหน้า `/admin/settings` โดยไม่ต้องแก้โค้ดหรือ deploy ใหม่ **กรอก API key ของแต่ละค่ายได้
+ตรงจากหน้าเว็บนี้เลย** (เก็บลง Supabase ตาราง `settings`) หรือจะตั้งไว้ใน Environment Variables
+เป็นค่าเริ่มต้น/สำรองก็ได้ — ถ้าตั้งไว้ทั้งสองที่ ค่าที่กรอกจากหน้าเว็บจะถูกใช้ก่อนเสมอ
+ค่าเริ่มต้นคือ Claude เพราะ context window ใหญ่
 พอใส่มาตรากฎหมายเต็มๆ ได้แม่นยำ และควบคุมขอบเขต/โทนคำตอบผ่าน system prompt ได้ละเอียด
 ระบบ prompt (guardrail + disclaimer) ใช้ชุดเดียวกันทุกค่าย เพื่อให้พฤติกรรมบอทคงที่ไม่ว่าจะสลับไปใช้ค่ายไหน
 
@@ -37,14 +39,21 @@ npm install
 3. คัดลอก Project URL และ Service Role Key ไปใส่ใน `.env.local`
 
 ### 3. ตั้งค่า AI Provider (เลือกอย่างน้อย 1 ค่าย)
-เลือกใส่ API key ของค่ายที่ต้องการใช้ (ใส่มากกว่า 1 ค่ายไว้ก็ได้ แล้วค่อยสลับใช้งานจริงทีหลังในหน้า
-`/admin/settings` — ระบบจะอ่านค่าที่เลือกไว้จากตาราง `settings` ทุกครั้งที่มีข้อความเข้ามา)
+วิธีที่ง่ายที่สุด: deploy ระบบก่อน (ไม่ต้องใส่ API key ของ AI provider ใน Environment Variables
+ก็ได้) แล้วเข้าไปกรอก API key ที่หน้า `/admin/settings` ได้เลย — ระบบจะเก็บลงตาราง `settings`
+ใน Supabase และเลือกใช้ก่อน Environment Variable เสมอ สลับค่ายหรือเปลี่ยน key เมื่อไหร่ก็ได้
+โดยไม่ต้อง deploy ใหม่
 
-| ค่าย | ขอ API key ที่ | ตัวแปรที่ต้องตั้ง |
-|---|---|---|
-| Claude (Anthropic) | https://console.anthropic.com | `ANTHROPIC_API_KEY` |
-| Gemini (Google) | https://aistudio.google.com/apikey | `GEMINI_API_KEY` |
-| GPT (OpenAI) | https://platform.openai.com/api-keys | `OPENAI_API_KEY` |
+ไปขอ API key ของค่ายที่ต้องการใช้ได้ที่:
+
+| ค่าย | ขอ API key ที่ |
+|---|---|
+| Claude (Anthropic) | https://console.anthropic.com |
+| Gemini (Google) | https://aistudio.google.com/apikey |
+| GPT (OpenAI) | https://platform.openai.com/api-keys |
+
+(ถ้าอยากตั้งเป็นค่าเริ่มต้น/สำรองผ่าน Environment Variables แทน ก็ยังทำได้ผ่าน `ANTHROPIC_API_KEY`,
+`GEMINI_API_KEY`, `OPENAI_API_KEY` ใน `.env.local` — ดูตัวอย่างใน `.env.example`)
 
 ค่าเริ่มต้นของระบบคือ **Claude** — เข้าไปเปลี่ยนได้ที่หน้า `/admin/settings` หลัง deploy แล้ว
 
@@ -62,19 +71,25 @@ npm install
 5. ปิด "Auto-reply message" ของ LINE ในหน้า Official Account Manager
    (ไม่งั้นจะชนกับข้อความที่บอทตอบ)
 
-### 6. คัดลอกไฟล์ตัวอย่าง env
+### 6. ตั้งรหัสผ่านสำหรับหน้าแอดมิน
+หน้า `/admin` และ API ทั้งหมดใต้ `/api/admin/*` ต้องล็อกอินก่อนถึงจะเข้าได้ ตั้งค่า 2 ตัวแปรนี้:
+- `ADMIN_PASSWORD` — รหัสผ่านที่จะใช้ล็อกอินที่หน้า `/login`
+- `ADMIN_SESSION_SECRET` — ค่าสุ่มยาวๆ สำหรับเซ็น session cookie (สุ่มด้วยคำสั่งเช่น
+  `openssl rand -hex 32` แล้วอย่าเปลี่ยนภายหลัง ไม่งั้นทุกคนที่ล็อกอินไว้จะหลุด session ทันที)
+
+### 7. คัดลอกไฟล์ตัวอย่าง env
 ```bash
 cp .env.example .env.local
 # แล้วแก้ค่าจริงทั้งหมดใน .env.local
 ```
 
-### 7. รันทดสอบในเครื่อง
+### 8. รันทดสอบในเครื่อง
 ```bash
 npm run dev
 ```
 เปิด http://localhost:3000/admin เพื่อจัดการหมวด/เอกสาร/ตัวกรอง
 
-### 8. Deploy ขึ้น Vercel
+### 9. Deploy ขึ้น Vercel
 ```bash
 npx vercel
 ```
@@ -82,6 +97,10 @@ npx vercel
 จากนั้นนำ URL ที่ได้ไปตั้งเป็น Webhook URL ใน LINE Developers Console (ข้อ 5.4)
 
 ## การใช้งานเว็บแอดมิน
+
+เข้าหน้า `/admin` ครั้งแรกจะถูก redirect ไปหน้า `/login` ให้กรอกรหัสผ่าน (ค่าเดียวกับ
+`ADMIN_PASSWORD` ที่ตั้งไว้) ก่อนถึงจะใช้งานเมนูต่างๆ ด้านล่างนี้ได้ — login แล้วจะอยู่ได้ 7 วัน
+ก่อน session หมดอายุ
 
 | หน้า | ใช้ทำอะไร |
 |---|---|
@@ -100,8 +119,9 @@ npx vercel
 - **Rich Menu** บน LINE OA เพื่อให้ผู้ใช้เลือกหมวดกฎหมายเองตั้งแต่ต้น (ลดการเดา category
   จากข้อความ ซึ่งตอนนี้ยังเป็น keyword matching ง่ายๆ ใน `guessCategorySlug()`)
   แนะนำให้ผูก postback event ของ Rich Menu เข้ากับ category slug โดยตรง
-- **Authentication สำหรับเว็บแอดมิน** — ตอนนี้ยังไม่มีระบบ login ป้องกันหน้า `/admin`
-  ก่อน deploy ใช้งานจริง ต้องเพิ่ม auth (เช่น Supabase Auth หรือ NextAuth) ก่อนเปิดสาธารณะ
+- **Authentication สำหรับเว็บแอดมิน** — ตอนนี้ป้องกันด้วยรหัสผ่านเดียว (`ADMIN_PASSWORD`)
+  ใช้ได้ดีสำหรับทีมเล็กๆ ที่แชร์รหัสผ่านกัน ถ้าต้องการแยกสิทธิ์ผู้ใช้แต่ละคน (audit log
+  ว่าใครแก้ไขอะไร) ควรอัปเกรดเป็น Supabase Auth หรือ NextAuth แบบ multi-user ในอนาคต
 - **Escalation queue UI** — ตอนนี้มีตาราง `escalations` ใน DB แล้ว แต่ยังไม่มีหน้าแอดมิน
   สำหรับเจ้าหน้าที่ assign/ปิดเคส แนะนำเพิ่มหน้า `/admin/escalations`
 - **อัปเดตกฎหมายเป็นระยะ** — ควรมี process ทบทวนเอกสารในคลังความรู้อย่างน้อยไตรมาสละครั้ง
@@ -110,4 +130,8 @@ npx vercel
 ## ความปลอดภัยของข้อมูล (PDPA)
 - LINE userId จะถูก hash ด้วย SHA-256 + salt ก่อนบันทึกเสมอ ไม่เก็บ userId จริง
 - Service Role Key ของ Supabase ถูกใช้ฝั่ง server เท่านั้น ไม่รั่วไปถึง client
+- API key ของ AI provider ที่กรอกในหน้า `/admin/settings` เก็บเป็น plain text ในตาราง `settings`
+  (เพื่อความเรียบง่าย) หน้า `/admin` ทั้งหมดถูกป้องกันด้วยรหัสผ่านแล้ว แต่ผู้ที่เข้าถึง Supabase
+  โปรเจกต์โดยตรง (เช่นผ่าน Service Role Key) จะเห็นค่าเหล่านี้ได้ ควรจำกัดสิทธิ์เข้าถึง Supabase
+  dashboard เฉพาะคนที่จำเป็น
 - แนะนำตั้งนโยบายลบ log การสนทนาเก่าเป็นระยะ (เช่น เกิน 6-12 เดือน) ตามความเหมาะสม

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { createEmbedding } from "@/lib/embeddings";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   const supabase = getSupabaseAdmin();
   const categoryId = req.nextUrl.searchParams.get("category_id");

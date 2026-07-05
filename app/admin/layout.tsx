@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "ภาพรวม" },
@@ -14,6 +15,18 @@ const NAV_ITEMS = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await fetch("/api/admin/logout", { method: "POST" });
+    } finally {
+      router.push("/login");
+      router.refresh();
+    }
+  };
 
   return (
     <div className="min-h-screen flex">
@@ -40,6 +53,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             );
           })}
         </nav>
+        <div className="px-6 py-4 border-t border-line">
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="text-sm text-muted hover:text-clay transition-colors disabled:opacity-50"
+          >
+            {loggingOut ? "กำลังออกจากระบบ…" : "ออกจากระบบ"}
+          </button>
+        </div>
       </aside>
       <main className="flex-1 px-10 py-8 max-w-5xl">{children}</main>
     </div>

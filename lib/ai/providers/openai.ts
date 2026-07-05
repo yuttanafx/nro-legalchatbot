@@ -2,9 +2,9 @@ import { SYSTEM_PROMPT, buildUserPrompt, AskParams, FALLBACK_ERROR_MESSAGE } fro
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 
-export async function askOpenAI(params: AskParams): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error("Missing OPENAI_API_KEY environment variable");
+export async function askOpenAI(params: AskParams, apiKeyOverride?: string): Promise<string> {
+  const apiKey = apiKeyOverride || process.env.OPENAI_API_KEY;
+  if (!apiKey) throw new Error("Missing OPENAI_API_KEY (ตั้งค่าได้ที่หน้า /admin/settings หรือ Environment Variable)");
 
   // ตั้งค่า OPENAI_MODEL ได้เอง เพราะ OpenAI ออกโมเดลใหม่บ่อย ค่าเริ่มต้นนี้เป็นรุ่นที่เสถียร ณ ตอนสร้างระบบ
   const model = process.env.OPENAI_MODEL || "gpt-4.1";

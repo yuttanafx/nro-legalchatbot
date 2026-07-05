@@ -1,8 +1,11 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { SYSTEM_PROMPT, buildUserPrompt, AskParams, FALLBACK_ERROR_MESSAGE } from "../shared";
 
-export async function askClaude(params: AskParams): Promise<string> {
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+export async function askClaude(params: AskParams, apiKeyOverride?: string): Promise<string> {
+  const apiKey = apiKeyOverride || process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY (ตั้งค่าได้ที่หน้า /admin/settings หรือ Environment Variable)");
+
+  const client = new Anthropic({ apiKey });
   const model = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-5";
 
   const response = await client.messages.create({
