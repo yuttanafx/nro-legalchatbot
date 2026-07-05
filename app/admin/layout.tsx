@@ -33,7 +33,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="w-60 shrink-0 border-r border-line bg-white/60 flex flex-col">
         <div className="px-6 py-6 border-b border-line">
           <p className="font-display text-lg text-ink leading-tight">แอดมินบอทกฎหมาย</p>
-          <p className="text-xs text-muted mt-1">มูลนิธิช่วยเหลือประชาชน</p>
+          <p className="text-xs text-muted mt-1">องค์กร NRO</p>
         </div>
         <nav className="flex-1 py-4">
           {NAV_ITEMS.map((item) => {

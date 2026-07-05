@@ -44,7 +44,7 @@ function LoginForm() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <p className="font-display text-2xl text-ink">แอดมินบอทกฎหมาย</p>
-          <p className="text-sm text-muted mt-1">มูลนิธิช่วยเหลือประชาชน</p>
+          <p className="text-sm text-muted mt-1">องค์กร NRO</p>
         </div>
 
         <form
