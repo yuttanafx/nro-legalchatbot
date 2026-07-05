@@ -2,7 +2,11 @@ import { SYSTEM_PROMPT, buildUserPrompt, AskParams, FALLBACK_ERROR_MESSAGE } fro
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 
-export async function askOpenAI(params: AskParams, apiKeyOverride?: string): Promise<string> {
+export async function askOpenAI(
+  params: AskParams,
+  apiKeyOverride?: string,
+  systemPrompt: string = SYSTEM_PROMPT
+): Promise<string> {
   const apiKey = apiKeyOverride || process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("Missing OPENAI_API_KEY (ตั้งค่าได้ที่หน้า /admin/settings หรือ Environment Variable)");
 
@@ -19,7 +23,7 @@ export async function askOpenAI(params: AskParams, apiKeyOverride?: string): Pro
       model,
       max_tokens: 1024,
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: systemPrompt },
         { role: "user", content: buildUserPrompt(params) }
       ]
     })

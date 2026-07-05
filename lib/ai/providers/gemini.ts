@@ -1,6 +1,10 @@
 import { SYSTEM_PROMPT, buildUserPrompt, AskParams, FALLBACK_ERROR_MESSAGE } from "../shared";
 
-export async function askGemini(params: AskParams, apiKeyOverride?: string): Promise<string> {
+export async function askGemini(
+  params: AskParams,
+  apiKeyOverride?: string,
+  systemPrompt: string = SYSTEM_PROMPT
+): Promise<string> {
   const apiKey = apiKeyOverride || process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("Missing GEMINI_API_KEY (ตั้งค่าได้ที่หน้า /admin/settings หรือ Environment Variable)");
 
@@ -12,7 +16,7 @@ export async function askGemini(params: AskParams, apiKeyOverride?: string): Pro
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      systemInstruction: { parts: [{ text: systemPrompt }] },
       contents: [
         {
           role: "user",

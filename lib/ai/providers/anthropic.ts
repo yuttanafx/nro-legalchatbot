@@ -1,7 +1,11 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { SYSTEM_PROMPT, buildUserPrompt, AskParams, FALLBACK_ERROR_MESSAGE } from "../shared";
 
-export async function askClaude(params: AskParams, apiKeyOverride?: string): Promise<string> {
+export async function askClaude(
+  params: AskParams,
+  apiKeyOverride?: string,
+  systemPrompt: string = SYSTEM_PROMPT
+): Promise<string> {
   const apiKey = apiKeyOverride || process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY (ตั้งค่าได้ที่หน้า /admin/settings หรือ Environment Variable)");
 
@@ -11,7 +15,7 @@ export async function askClaude(params: AskParams, apiKeyOverride?: string): Pro
   const response = await client.messages.create({
     model,
     max_tokens: 1024,
-    system: SYSTEM_PROMPT,
+    system: systemPrompt,
     messages: [{ role: "user", content: buildUserPrompt(params) }]
   });
 

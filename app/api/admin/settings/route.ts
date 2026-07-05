@@ -65,7 +65,11 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "invalid ai_provider value" }, { status: 400 });
   }
 
-  if (key !== "ai_provider" && !isApiKeySetting(key)) {
+  if (key === "bot_tone" && !["formal", "professional_friendly", "warm_casual"].includes(value)) {
+    return NextResponse.json({ error: "invalid bot_tone value" }, { status: 400 });
+  }
+
+  if (key !== "ai_provider" && key !== "bot_tone" && !isApiKeySetting(key)) {
     return NextResponse.json({ error: "invalid setting key" }, { status: 400 });
   }
 

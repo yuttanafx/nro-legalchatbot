@@ -24,7 +24,7 @@ create table if not exists documents (
   title text not null,                    -- เช่น "มาตรา 420 ประมวลกฎหมายแพ่งฯ"
   source_ref text,                        -- อ้างอิงแหล่งที่มา เช่น "ป.พ.พ. มาตรา 420"
   content text not null,                  -- เนื้อหาเต็มสำหรับให้ AI อ้างอิง
-  embedding vector(1536),                 -- ปรับ dimension ตาม embedding model ที่ใช้จริง
+  embedding vector(512),                  -- voyage-3-lite ให้ embedding ขนาด 512 มิติ (ดู lib/embeddings.ts)
   version int not null default 1,
   is_published boolean not null default false,
   updated_by text,
@@ -80,7 +80,7 @@ create table if not exists escalations (
 
 -- ---------- ฟังก์ชันค้นหาเอกสารด้วย vector similarity ----------
 create or replace function match_documents (
-  query_embedding vector(1536),
+  query_embedding vector(512),
   match_category_slug text,
   match_count int default 5
 )
@@ -116,7 +116,8 @@ create table if not exists settings (
 );
 
 insert into settings (key, value) values
-  ('ai_provider', 'anthropic')  -- ค่าที่เป็นไปได้: 'anthropic' | 'gemini' | 'openai'
+  ('ai_provider', 'anthropic'),  -- ค่าที่เป็นไปได้: 'anthropic' | 'gemini' | 'openai'
+  ('bot_tone', 'professional_friendly')  -- ค่าที่เป็นไปได้: 'formal' | 'professional_friendly' | 'warm_casual'
 on conflict (key) do nothing;
 
 -- ---------- Seed หมวดกฎหมายเริ่มต้น ----------

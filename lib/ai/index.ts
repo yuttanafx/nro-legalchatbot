@@ -2,7 +2,7 @@ import { getSupabaseAdmin } from "../supabase";
 import { askClaude } from "./providers/anthropic";
 import { askGemini } from "./providers/gemini";
 import { askOpenAI } from "./providers/openai";
-import { AskParams } from "./shared";
+import { AskParams, buildSystemPrompt } from "./shared";
 
 export type AiProvider = "anthropic" | "gemini" | "openai";
 
@@ -40,13 +40,16 @@ export async function askLegalAssistant(params: AskParams): Promise<string> {
   // ใช้ API key ที่ตั้งค่าไว้ในหน้าเว็บ (DB) ก่อน ถ้าไม่มีจะ fallback ไปที่ Environment Variable
   const apiKey = settings[PROVIDER_KEY_SETTING[provider]];
 
+  // โทนการตอบ (ทางการ / มืออาชีพแต่เป็นมิตร / เป็นกันเองอบอุ่น) ปรับได้ที่หน้า /admin/settings
+  const systemPrompt = buildSystemPrompt(settings.bot_tone);
+
   switch (provider) {
     case "gemini":
-      return askGemini(params, apiKey);
+      return askGemini(params, apiKey, systemPrompt);
     case "openai":
-      return askOpenAI(params, apiKey);
+      return askOpenAI(params, apiKey, systemPrompt);
     case "anthropic":
     default:
-      return askClaude(params, apiKey);
+      return askClaude(params, apiKey, systemPrompt);
   }
 }

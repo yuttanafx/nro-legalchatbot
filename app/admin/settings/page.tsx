@@ -20,6 +20,24 @@ const PROVIDERS: { value: string; label: string; keyName: string }[] = [
   }
 ];
 
+const TONE_OPTIONS: { value: string; label: string; description: string }[] = [
+  {
+    value: "formal",
+    label: "ทางการ",
+    description: "สุภาพเต็มรูปแบบ กระชับ ตรงประเด็น เหมือนหน่วยงานราชการ"
+  },
+  {
+    value: "professional_friendly",
+    label: "มืออาชีพแต่เป็นมิตร (ค่าเริ่มต้น)",
+    description: "สุภาพ อบอุ่นเล็กน้อย เข้าใจง่าย น่าเชื่อถือ"
+  },
+  {
+    value: "warm_casual",
+    label: "เป็นกันเอง อบอุ่น",
+    description: "เหมือนคุยกับคนที่ห่วงใย เข้าถึงง่าย แต่ยังคงความแม่นยำของข้อมูล"
+  }
+];
+
 type ApiKeyInfo = {
   configured: boolean;
   source: "database" | "env" | "none";
@@ -28,8 +46,10 @@ type ApiKeyInfo = {
 
 export default function SettingsPage() {
   const [provider, setProvider] = useState<string>("anthropic");
+  const [tone, setTone] = useState<string>("professional_friendly");
   const [apiKeys, setApiKeys] = useState<Record<string, ApiKeyInfo>>({});
   const [saving, setSaving] = useState(false);
+  const [toneSaving, setToneSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   // ค่าที่กำลังพิมพ์อยู่ในช่อง input ของแต่ละค่าย (ยังไม่บันทึก)
@@ -42,6 +62,7 @@ export default function SettingsPage() {
       .then((r) => r.json())
       .then((d) => {
         setProvider(d.settings?.ai_provider ?? "anthropic");
+        setTone(d.settings?.bot_tone ?? "professional_friendly");
         setApiKeys(d.apiKeys ?? {});
         setLoaded(true);
       });
@@ -60,6 +81,17 @@ export default function SettingsPage() {
       body: JSON.stringify({ key: "ai_provider", value })
     });
     setSaving(false);
+  };
+
+  const handleSelectTone = async (value: string) => {
+    setTone(value);
+    setToneSaving(true);
+    await fetch("/api/admin/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key: "bot_tone", value })
+    });
+    setToneSaving(false);
   };
 
   const handleSaveKey = async (keyName: string) => {
@@ -189,6 +221,32 @@ export default function SettingsPage() {
             และมีสิทธิ์เข้าถึงเฉพาะผู้ที่ล็อกอินเข้าหน้าแอดมินนี้เท่านั้น หากไม่ได้ตั้งค่าไว้ที่นี่
             ระบบจะใช้ค่าเริ่มต้นจาก Environment Variable แทน
           </p>
+
+          <h2 className="font-display text-xl text-ink mt-10">โทนการตอบของบอท</h2>
+          <p className="text-sm text-muted mt-1">
+            ปรับน้ำเสียง/ความเป็นกันเองของคำตอบได้ กฎเรื่องความถูกต้องของข้อมูลกฎหมายและ
+            disclaimer ยังคงเหมือนเดิมทุกโทน เปลี่ยนแค่วิธีเรียบเรียงคำตอบเท่านั้น
+          </p>
+
+          <div className="mt-4 border border-line rounded-md bg-white divide-y divide-line">
+            {TONE_OPTIONS.map((t) => (
+              <label key={t.value} className="flex items-start gap-3 px-5 py-4 cursor-pointer">
+                <input
+                  type="radio"
+                  name="bot_tone"
+                  className="mt-1 accent-moss"
+                  checked={tone === t.value}
+                  onChange={() => handleSelectTone(t.value)}
+                  disabled={toneSaving}
+                />
+                <div>
+                  <p className="text-ink font-medium">{t.label}</p>
+                  <p className="text-xs text-muted mt-0.5">{t.description}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+          {toneSaving && <p className="mt-2 text-xs text-muted">กำลังบันทึก…</p>}
         </>
       )}
 
